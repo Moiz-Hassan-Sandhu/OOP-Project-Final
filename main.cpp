@@ -2232,7 +2232,7 @@ void viewMyTasks(PaidWorkers* pw) {
     TimeManager tm;
     tm.readTasksFile();
     tm.checkDeadlines();
-    tm.writeTasksToFile();
+    tm.writeTasksFile();
 
     SetConsoleOutputCP(CP_UTF8);
     // Enable ANSI escape codes on Windows
@@ -2540,6 +2540,12 @@ void assignTask(PaidWorkers* pw) {
 }
 
 void delegateIncompetentTasks(PaidWorkers* pw) {
+
+    TimeManager tm;
+    tm.readTasksFile();
+    tm.checkDeadlines();
+    tm.writeTasksFile();
+
     cout << "Checking for Incompetent Tasks" << endl;
 
     ifstream in("Task.dat");
