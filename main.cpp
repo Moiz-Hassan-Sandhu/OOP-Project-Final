@@ -1146,8 +1146,6 @@ class PolicyEngine : public ActivityLog{
          }
         
     }
-
-    //to delegate task the task should be delegated to same or higher level of hierarchy
     // ———————————— recursive delegation check ————————————
     bool can_delegate_task(PaidWorkers* new_p, PaidWorkers* previous_p) {
         // wrap each in a PolicyEngine to get levels
@@ -1273,24 +1271,183 @@ class PolicyEngine : public ActivityLog{
              return false;
          }
     }
-    bool AssignCreatedTask(PaidWorkers* p)
-    {
-      if(accessLevel == 3){
-            cout<<GREEN<<"\n        You have permission to assign tasks "<<"\033[0m"<<endl;
-            //reading Task.dat file to find Created status file and re writing them with replacing NONE with the name of the worker
-            ifstream in;
-            ofstream out;
-            in.open("Task.dat");
-            if(!in){
-                cout<<"Error opening file"<<endl;
-                return false;
-            }
-            string task_name, 
+    bool canAssignCreatedTask(PaidWorkers* p){
+        PolicyEngine p2(p);
+        if(accessLevel>=p2.getAccessLevel()){
+            return true;
 
-            
-            
-      }
+        }
+       
+            return false;
+
     }
+    bool AssignCreatedTask(PaidWorkers* pw)
+{
+    #define RESET "\033[0m"
+    if (accessLevel != 3) {
+        cout << RED << "        You do not have permission to assign tasks.\n" << RESET;
+        return false;
+    }
+    cout << GREEN << "\n        You have permission to assign tasks " << RESET << endl;
+
+    ifstream in("Task.dat");
+    ofstream out("Temp.dat");
+    if (!in || !out) {
+        cout << "Error opening Task.dat or Temp.dat" << endl;
+        return false;
+    }
+
+    // buffers for each field
+    string name, desc, status, by, byPos, to, toPos, prio, timeStr;
+    int ttl;
+    bool anyAssigned = false;
+
+    // process line by line
+    while (getline(in, name, '|')) {
+        getline(in, desc,           '|');
+        getline(in, status,         '|');
+        getline(in, by,             '|');
+        getline(in, byPos,          '|');
+        getline(in, to,             '|');
+        getline(in, toPos,          '|');
+        getline(in, prio,           '|');
+        in >> ttl; in.ignore(1);             // skip '|'
+        getline(in, timeStr);
+
+        // only interact with Created tasks
+        if (status == "Created") {
+            // show current task details
+            const int detailsCount = 9;
+            string details[detailsCount] = {
+                "Task Name: " + name,
+                "Task Description: " + desc,
+                "Task Status: " + status,
+                "Task Assigned By: " + by,
+                "Task Assigned To: " + to,
+                "Task Assigned To Position: " + toPos,
+                "Task Priority: " + prio,
+                "Task Assigned Time: " + timeStr,
+                "Task Total Time: " + to_string(ttl)
+            };
+            printMenu(" TASK DETAILS ", details, detailsCount);
+
+            // show role‐selection menu
+            cout << YELLOW << "\n\n          Assign Task Menu" << RESET << endl;
+            const int roleCount = 5;
+            string roles[roleCount] = {
+                "Press 1 to Assign Task to Junior",
+                "Press 2 to Assign Task to Employee",
+                "Press 3 to Assign Task to Manager",
+                "Press 4 to Assign Task to Director",
+                "Press 5 to Assign Task to Executive"
+            };
+            printMenu(" Assign Task ", roles, roleCount);
+
+            cout << BLUE << "\n          Enter your choice (1-5): " << RESET;
+            int choice; cin >> choice; cin.ignore();
+
+            PaidWorkers* target = nullptr;
+            switch (choice) {
+                case 1: target = new Junior();    break;
+                case 2: target = new Employee();  break;
+                case 3: target = new Manager();   break;
+                case 4: target = new Director();  break;
+                case 5: target = new Executive(); break;
+                default:
+                    cout << RED << "          Invalid Option\n" << RESET;
+                    // leave this task unmodified
+                    break;
+            }
+
+            if (target) {
+                // ask for user name
+                cout << BLUE << "\n          Enter the name of the user: " << RESET;
+                string chosenName; 
+                getline(cin, chosenName);
+
+                // load from role‐file
+                ifstream fin(target->getPosition() + ".txt");
+                if (!fin) {
+                    cerr << "Error opening " << target->getPosition() << ".txt\n";
+                    delete target;
+                } else {
+                    bool found = false;
+                    while (!found && fin.good()) {
+                        int id, salary, points;
+                        string fname, pos, pwd;
+                        fin >> id; fin.ignore(1);
+                        getline(fin, fname, '|');
+                        getline(fin, pos,   '|');
+                        getline(fin, pwd,   '|');
+                        fin >> salary; fin.ignore(1);
+                        fin >> points; fin.ignore(1);
+
+                        if (fname == chosenName) {
+                            target->setID(id);
+                            target->setPosition(pos);
+                            target->setName(fname);
+                            target->setPassword(pwd);
+                            target->setSalary(salary);
+                            found = true;
+                        }
+                    }
+                    fin.close();
+
+                    if (!found) {
+                        cout << RED << "\n          User not found in " 
+                             << target->getPosition() << ".txt\n" << RESET;
+                        delete target;
+                    } else {
+                        cout << GREEN << "\n          User found: " 
+                             << target->getName() << RESET << endl;
+
+                        PolicyEngine pe(pw);
+                        if (pe.canAssignCreatedTask(target)) {
+                            // commit the assignment
+                            status = "Assigned";
+                            to     = target->getName();
+                            toPos  = target->getPosition();
+                            anyAssigned = true;
+                            cout << GREEN << "          Task Assigned Successfully\n" 
+                                 << RESET;
+                        } else {
+                            cout << RED << "          Policy denied assignment\n" 
+                                 << RESET;
+                        }
+                        delete target;
+                    }
+                }
+            }
+        }
+
+        // write (possibly updated) line
+        out 
+          << name   << '|'
+          << desc   << '|'
+          << status << '|'
+          << by     << '|'
+          << byPos  << '|'
+          << to     << '|'
+          << toPos  << '|'
+          << prio   << '|'
+          << ttl    << '|'
+          << timeStr
+          << '\n';
+    }
+
+    in.close();
+    out.close();
+
+    // replace original file
+    remove("Task.dat");
+    rename("Temp.dat", "Task.dat");
+
+    if (!anyAssigned) {
+        cout << "No tasks with status 'Created' were assigned.\n";
+    }
+    return anyAssigned;
+}
+
 };
 
 
@@ -3272,7 +3429,8 @@ void ManagerMenu(PaidWorkers* pw){
         }
         case 6:
         {
-            AssignCreatedTask(pw);
+            PolicyEngine PE(pw);
+            PE.AssignCreatedTask(pw);
             break;
         }
         default:
