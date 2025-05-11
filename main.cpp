@@ -1244,6 +1244,7 @@ class PolicyEngine : public ActivityLog{
         cout<<RED<<"\n\n===========Global Alert============ "<<endl;
         cout<<"\n          Enter the Alert: ";
         string alert_message;
+        cin.ignore();
         getline(cin, alert_message);
         //0|Director|Servers to be down Till 9pm|readername1readername2
         //message id|Sender position|Message|readers names
@@ -1315,7 +1316,7 @@ class PolicyEngine : public ActivityLog{
                 //outing time also to the file
                 time_t currentTime = time(0); // Get current time
                 char* dateTime = ctime(&currentTime); // Convert to string
-                out<<info->getSender()<<"|"<<info->getSendersPosition()<<"|"<<info->getReceiver()<<"|"<<info->getMessage()<<"|"<<info->getIsRead()<<"|"<< dateTime<< endl;    
+                out<<info->getSender()<<"|"<<info->getSendersPosition()<<"|"<<info->getReceiver()<<"|"<<info->getMessage()<<"|"<<info->getIsRead()<<"|"<< dateTime;    
                 out.close();
                 cout<< GREEN << "Information sent successfully!" << "\033[32m" << endl;
              return true;
@@ -1334,7 +1335,7 @@ class PolicyEngine : public ActivityLog{
 
         // Base case: new_p has equal or higher access than previous_p
         if (peNew.getAccessLevel() >= pePrev.getAccessLevel()) {
-            cout << "Allowed to delegate to " << new_p->getPosition() << "\n";
+            cout <<GREEN<< "Allowed to delegate to " << new_p->getPosition() <<RESET<< "\n";
             return true;
         }
 
@@ -1342,8 +1343,8 @@ class PolicyEngine : public ActivityLog{
         PaidWorkers* escalated = escalateWorker(new_p);
         if (!escalated) {
             // we’ve reached the top and still can’t delegate
-            cout << "Cannot delegate: reached top of hierarchy at "
-                 << new_p->getPosition() << "\n";
+            cout <<RED<< "Cannot delegate: reached top of hierarchy at "
+                 << new_p->getPosition() << RESET<<"\n";
             return false;
         }
 
@@ -1461,8 +1462,7 @@ class PolicyEngine : public ActivityLog{
             return false;
 
     }
-    bool AssignCreatedTask(PaidWorkers* pw)
-{
+    bool AssignCreatedTask(PaidWorkers* pw){
     #define RESET "\033[0m"
     if (accessLevel != 3) {
         cout << RED << "        You do not have permission to assign tasks.\n" << RESET;
@@ -2126,19 +2126,20 @@ class Authentication : public ActivityLog{
         void addUser(string pos)  //string to check position
         {
             string username, password;
-            cout<<"Enter Username: ";
+            cout<<YELLOW<< " \n      Enter Username: ";
             cin>>username;
             
             int index = userExists(username, pos);
             if(index != -1)
             {
+                
                 cout<<endl<<endl;
-                cout<<"Username already exists!"<<endl<<endl;
-                cout<<"Please try again with a different username!"<<endl<<endl;
+                cout<<RED<<"\n      Username already exists!"<<endl<<endl;
+                cout<<"Please try again with a different username!"<<endl<<RESET<<endl;
                 return;
             }
             
-            cout<<"Enter Password: ";
+            cout<<YELLOW<<"\n     Enter Password: "<<RESET;
             cin>>password;
             
             string hashedPass = hashedPassword(password);
@@ -2160,7 +2161,7 @@ class Authentication : public ActivityLog{
             writelog.close();
             
             cout<<endl<<endl;
-            cout<<"User added successfully!"<<endl<<endl;
+            cout<<GREEN<<"\n      User added successfully!"<<endl<<endl;
             
         }
         
@@ -2295,7 +2296,6 @@ void mainMenu()
         {
             Authentication auth;
             PaidWorkers* pw = &auth.login("Executive");
-            cout<<"insidemain"<<endl;
             if(pw->getLogin() == true)
             {
                 ExecutiveMenu(pw);
@@ -3289,7 +3289,6 @@ void show_Message_menu(PaidWorkers * pw)
                     string options[3] = {"Sender: " + sender,
                         "Receiver: " + receiver,
                         "Encrypted Message: " + message,};
-                        cout<<"DEBUG :" <<id<<endl;
                     printMenu("PRIVATE MESSAGE", options, 3);
                         decryptInteractive(message, id);
                 }
