@@ -70,6 +70,71 @@ using namespace std;
 
 void mainMenu();
 
+class PaidWorkers{
+    protected:
+        int ID;
+        string name;
+        string position;
+        string password;
+        float salary;
+        bool new_messages;
+        int points; //Employee points added New Data member
+        bool login; //Login as data member to check on the run time in main menus if the user is logged in or not
+
+    public:
+        virtual void print() = 0;//making this an abstarct class we donot need an object of this class
+        void setID(int id){
+            ID = id;
+        }
+        void setName(string n){
+            name = n;
+        }
+        void setPosition(string p){
+            position = p;
+        }
+        void setPassword(string p){
+            password = p;
+        }
+        void setSalary(float s){
+            salary = s;
+        }
+        void setNewMessages(bool n){
+            new_messages = n;
+        }
+        int getID(){
+            return ID;
+        }
+        string getName(){
+            return name;
+        }
+        string getPassword(){
+            return password;
+        }
+        string getPosition(){
+            return position;
+        }
+        float getSalary(){
+            return salary;
+        }
+        bool getNewMessages(){
+            return new_messages;
+        }
+        void setPoints(int p){
+            points = p;
+        }
+        int getPoints(){
+            return points;
+        }
+        void setLogin(bool l){
+            login = l;
+        }
+        bool getLogin(){
+            return login;
+        }
+        virtual ~PaidWorkers(){}
+};
+
+
 class task {
     string task_name;
     string task_description;
@@ -298,10 +363,12 @@ public:
             tasks[i]->setTaskAssignedToPosition(task_assigned_to_pos);
             tasks[i]->setTaskPriority(priority);
             tasks[i]->setTTLTime(ttl);
+            cout<<"Task "<<i+1<<": "<<tasks[i]->getTaskName()<<endl;
             
         in.close();
         i++;
         }
+        cout<<"total: "<<taskCount<<endl;
     }
     
     
@@ -363,69 +430,6 @@ public:
 
 
 
-class PaidWorkers{
-    protected:
-        int ID;
-        string name;
-        string position;
-        string password;
-        float salary;
-        bool new_messages;
-        int points; //Employee points added New Data member
-        bool login; //Login as data member to check on the run time in main menus if the user is logged in or not
-
-    public:
-        virtual void print() = 0;//making this an abstarct class we donot need an object of this class
-        void setID(int id){
-            ID = id;
-        }
-        void setName(string n){
-            name = n;
-        }
-        void setPosition(string p){
-            position = p;
-        }
-        void setPassword(string p){
-            password = p;
-        }
-        void setSalary(float s){
-            salary = s;
-        }
-        void setNewMessages(bool n){
-            new_messages = n;
-        }
-        int getID(){
-            return ID;
-        }
-        string getName(){
-            return name;
-        }
-        string getPassword(){
-            return password;
-        }
-        string getPosition(){
-            return position;
-        }
-        float getSalary(){
-            return salary;
-        }
-        bool getNewMessages(){
-            return new_messages;
-        }
-        void setPoints(int p){
-            points = p;
-        }
-        int getPoints(){
-            return points;
-        }
-        void setLogin(bool l){
-            login = l;
-        }
-        bool getLogin(){
-            return login;
-        }
-        virtual ~PaidWorkers(){}
-};
 
 
 class Junior: public PaidWorkers{
