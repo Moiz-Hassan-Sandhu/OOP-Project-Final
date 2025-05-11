@@ -123,10 +123,8 @@ Sun May 11 00:58:35 2025, leo Logged in Successfully!  |0
 Sun May 11 04:20:48 2025, mannan Logged in Successfully!  |0
 Sun May 11 14:15:48 2025, mannan Failed Login Attempt (Wrong OTP)!  |1
 Sun May 11 14:16:54 2025, mannan Logged in Successfully!  |0
-Sun May 11 15:26:01 2025, alice Logged in Successfully!  |0
-Sun May 11 15:27:59 2025, alice Logged in Successfully!  |0
-Task: Catch bombs assigned to grace by alice
-Sun May 11 15:42:19 2025, alice Failed Login Attempt (Wrong OTP)!  |1
-Sun May 11 15:42:41 2025, alice Logged in Successfully!  |0
-Task: hagu naka hagu naka assigned to theo by alice
-Sun May 11 16:00:49 2025, alice Logged in Successfully!  |0
+Sun May 11 16:07:43 2025, nora Logged in Failed! (incorrect pass)  |1
+Sun May 11 16:07:56 2025, nora Logged in Failed! (incorrect pass)  |1
+Sun May 11 16:07:57 2025, nora Logged in Failed (Too many attempts)!  |3
+Sun May 11 16:08:49 2025, oliver Logged in Successfully!  |0
+Sun May 11 16:12:05 2025, oliver Logged in Successfully!  |0
