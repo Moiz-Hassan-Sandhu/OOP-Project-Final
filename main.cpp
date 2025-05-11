@@ -142,6 +142,7 @@ class task {
     string task_assigned_by;
     string task_assigned_to;
     string task_assigned_to_position;
+    string task_assigned_by_position;
     string task_priority;
     string task_assigned_time;  
     time_t TTL_time;
@@ -153,6 +154,8 @@ class task {
         task_assigned_by="";
         task_assigned_to="";
         task_assigned_to_position="";
+        task_assigned_by_position="";
+        task_assigned_time="";
         task_priority="";
         TTL_time=0;
     }
@@ -162,6 +165,10 @@ class task {
         task_status=status;
         task_assigned_by=assigned_by;
         task_assigned_to=assigned_to;
+        task_priority="";
+        task_assigned_time="";
+        task_assigned_to_position="";
+        task_assigned_by_position="";
         TTL_time=TTL;
     }
     void setAssignedTime(const string &t) {
@@ -187,6 +194,12 @@ class task {
     }
     void setTaskAssignedBy(string assigned_by){
         task_assigned_by=assigned_by;
+    }
+    void setTaskAssignedByPosition(string position){
+        task_assigned_by_position = position;
+    }
+    string getTaskAssignedByPosition(){
+        return task_assigned_by_position;
     }
     void setTaskAssignedTo(string assigned_to){
         task_assigned_to=assigned_to;
@@ -275,7 +288,6 @@ private:
         if (index >= taskCount) {
             return;
         }
-        
         time_t now = time(0);
         if (now > tasks[index]->getTTLTime() && tasks[index]->getTaskStatus() != "Expired") {
             tasks[index]->setTaskStatus("Expired");
@@ -300,7 +312,7 @@ public:
     }
     
     void readTasksFile() {
-
+        // Clean up previous tasks if any
         if(taskCount != 0)
         {
             for(int i = 0; i < taskCount; i++)
@@ -318,28 +330,33 @@ public:
             return;
         }
         
+        // Count lines properly
         string line;
-        while(in>>line)
-        {
-            taskCount++;
+        while(getline(in, line)) {
+            if(!line.empty()) {
+                taskCount++;
+            }
         }
-
-        tasks = new task*[taskCount];
+        
+        // Close and reopen the file
         in.close();
-
         in.open("Task.dat");
+        if (!in) {
+            cout << "Error reopening Task.dat file" << endl;
+            return;
+        }
+        
+        tasks = new task*[taskCount];
         
         string name, description, status, assigned_by, assigned_to, priority;
         string assigned_by_position, task_assigned_to_pos;
         time_t ttl;
-        string assigned_time;
-        int days;
 
-        int i = 0;
-        while (getline(in, name, '|')) {
-            // Create a new task object first - THIS IS THE CRITICAL FIX
+        for(int i = 0; i < taskCount; i++) {
             tasks[i] = new task();
             
+            // Read each field separated by '|'
+            getline(in, name, '|');
             getline(in, description, '|');
             getline(in, status, '|');
             getline(in, assigned_by, '|');
@@ -347,28 +364,25 @@ public:
             getline(in, assigned_to, '|');
             getline(in, task_assigned_to_pos, '|');
             getline(in, priority, '|');
-            in >> days;
-            in.ignore(1);
-            in >> ttl;
-            in.ignore(1);
-            getline(in, assigned_time, '\n');
+            in>>ttl;
             
-            // Set the task properties
+            
+            // Set task properties
             tasks[i]->setTaskName(name);
             tasks[i]->setTaskDescription(description);
             tasks[i]->setTaskStatus(status);
             tasks[i]->setTaskAssignedBy(assigned_by);
-            tasks[i]->setTaskAssignedToPosition(assigned_by_position);
+            tasks[i]->setTaskAssignedByPosition(assigned_by_position);
             tasks[i]->setTaskAssignedTo(assigned_to);
             tasks[i]->setTaskAssignedToPosition(task_assigned_to_pos);
             tasks[i]->setTaskPriority(priority);
             tasks[i]->setTTLTime(ttl);
-            cout<<"Task "<<i+1<<": "<<tasks[i]->getTaskName()<<endl;
             
-        in.close();
-        i++;
+            cout << "Task " << i+1 << ": " << tasks[i]->getTaskName() << endl;
         }
-        cout<<"total: "<<taskCount<<endl;
+        
+        in.close();
+        cout << "Total tasks read: " << taskCount << endl;
     }
     
     
@@ -389,7 +403,7 @@ public:
         
         for (int i = 0; i < taskCount; i++)
         {
-            out<< tasks[i]->getTaskName()<<"|"<<tasks[i]->getTaskDescription()<<"|"<<tasks[i]->getTaskStatus()<<"|"<<tasks[i]->getTaskAssignedBy()<<"|"<< tasks[i]->getTaskAssignedToPosition() <<"|"<<tasks[i]->getTaskAssignedTo()<<"|"<<tasks[i]->getTaskAssignedToPosition()<<"|"<<tasks[i]->getTaskPriority()<<"|"<<"5"<<"|"<< tasks[i]->getTTLTime() << endl;
+            out<< tasks[i]->getTaskName()<<"|"<<tasks[i]->getTaskDescription()<<"|"<<tasks[i]->getTaskStatus()<<"|"<<tasks[i]->getTaskAssignedBy()<<"|"<< tasks[i]->getTaskAssignedToPosition() <<"|"<<tasks[i]->getTaskAssignedTo()<<"|"<<tasks[i]->getTaskAssignedToPosition()<<"|"<<tasks[i]->getTaskPriority()<<"|"<<tasks[i]->getTTLTime();
         }
         out.close();
         // Log expired tasks
@@ -1096,9 +1110,7 @@ class PolicyEngine : public ActivityLog{
         // if already at "Executive" or unknown, no further escalation
         return nullptr;
     }
-    
-    
-    
+
     public:
     PolicyEngine(PaidWorkers* p)
     {
@@ -1174,6 +1186,7 @@ class PolicyEngine : public ActivityLog{
             }
             
             // I will  start working here for the TTL Assingment ( EXPIREIE DATE )
+            cout<<YELLOW<<"\n     Enter Task Expire Time (in days): "<<"\033[0m";
             int assingedDays = 0;
             time_t TTL = time(0) + (assingedDays * 24 * 60 * 60);
             t->setTTLTime(TTL);
@@ -1184,7 +1197,7 @@ class PolicyEngine : public ActivityLog{
                 cout<<"Error opening file"<<endl;
                 return false;
             }
-            out<<t->getTaskName()<<"|"<<t->getTaskDescription()<<"|"<<t->getTaskStatus()<<"|"<<t->getTaskAssignedBy()<<"|"<<pw->getPosition()<<"|"<<t->getTaskAssignedTo()<<"|"<<t->getTaskAssignedToPosition()<<"|"<<t->getTaskPriority()<<"|"<<"5"<<"|"<< TTL;
+            out<<t->getTaskName()<<"|"<<t->getTaskDescription()<<"|"<<t->getTaskStatus()<<"|"<<t->getTaskAssignedBy()<<"|"<<pw->getPosition()<<"|"<<t->getTaskAssignedTo()<<"|"<<t->getTaskAssignedToPosition()<<"|"<<t->getTaskPriority()<<"|"<< TTL <<endl;
 
 
             ActivityLog logging( "Task: " + t->getTaskName() + " assigned to " + p->getName() + " by " + pw->getName());
@@ -1392,15 +1405,12 @@ class PolicyEngine : public ActivityLog{
             cout<<"Invalid Priority"<<endl;
             return false;
         }
-        //taking in current time and assigning it to taskassignedtime
-        time_t currentTime = time(0); // Get current time
-        char* dateTime = ctime(&currentTime); // Convert to string
-        t->setAssignedTime(dateTime);
         cout<<YELLOW<<"\n     Enter Task Expire Time (in days): "<<"\033[0m";
         int assingedDays = 0;
         cin>>assingedDays;
-        time_t deadline = time(0) + (assingedDays * 24 * 60 * 60);
-        t->setTTLTime(deadline);
+        time_t TTL = time(0) + (assingedDays * 24 * 60 * 60);
+        t->setTTLTime(TTL);
+
         //writing the task to the file
         ofstream out("Task.dat",ios::app);
         if(!out){
@@ -1408,7 +1418,7 @@ class PolicyEngine : public ActivityLog{
             return false;
         }
         //outing time also to the file
-        out<<t->getTaskName()<<"|"<<t->getTaskDescription()<<"|"<<t->getTaskStatus()<<"|"<<t->getTaskAssignedBy()<<"|"<<pw->getPosition()<<"|"<<t->getTaskAssignedTo()<<"|"<<t->getTaskAssignedToPosition()<<"|"<<t->getTaskPriority()<<"|"<<deadline<<"|"<< dateTime;
+        out<<t->getTaskName()<<"|"<<t->getTaskDescription()<<"|"<<t->getTaskStatus()<<"|"<<t->getTaskAssignedBy()<<"|"<<pw->getPosition()<<"|"<<t->getTaskAssignedTo()<<"|"<<t->getTaskAssignedToPosition()<<"|"<<t->getTaskPriority()<<"|"<< TTL <<endl;
         out.close();
         cout<<GREEN<<"\n     Task Created Successfully!"<<"\033[0m"<<endl;
         return true;
@@ -1457,9 +1467,7 @@ class PolicyEngine : public ActivityLog{
             return true;
 
         }
-       
             return false;
-
     }
     bool AssignCreatedTask(PaidWorkers* pw)
 {
@@ -2413,10 +2421,6 @@ void readingInfoFile(PaidWorkers* pw)
 
 void viewMyTasks(PaidWorkers* pw) {
 
-    TimeManager tm;
-    tm.readTasksFile();
-    tm.checkDeadlines();
-    tm.writeTasksFile();
 
     SetConsoleOutputCP(CP_UTF8);
     // Enable ANSI escape codes on Windows
@@ -2725,10 +2729,7 @@ void assignTask(PaidWorkers* pw) {
 
 void delegateIncompetentTasks(PaidWorkers* pw) {
 
-    TimeManager tm;
-    tm.readTasksFile();
-    tm.checkDeadlines();
-    tm.writeTasksFile();
+    
 
     cout << "Checking for Incompetent Tasks" << endl;
 
