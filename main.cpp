@@ -67,7 +67,156 @@ using namespace std;
 
 //------------------------------------------------------------------------------------------------------
 
+
+
+
 void mainMenu();
+
+class TimeManager
+{
+private:
+    task** tasks;
+    int taskCount;
+    
+    // Helper function for recursive deadline checking
+    void checkDeadlinesRecursive(int index) {
+        if (index >= taskCount) {
+            return;
+        }
+        
+        time_t now = time(0);
+        if (now > tasks[index]->getTTLTime() && tasks[index]->getTaskStatus() != "Expired") {
+            tasks[index]->setTaskStatus("Expired");
+            cout << "Task expired: " << tasks[index]->getTaskName() << endl;
+        }
+        
+        checkDeadlinesRecursive(index + 1);
+    }
+    
+public:
+    // Constructor
+    TimeManager() {
+        taskCount = 0;
+        tasks = nullptr;
+    }
+    
+    ~TimeManager() {
+        for (int i = 0; i < taskCount; i++) {
+            delete tasks[i];
+        }
+        delete[] tasks;
+    }
+    
+    void readTasksFromFile() {
+
+        if(taskCount != 0)
+        {
+            delete [] tasks;
+        }
+        taskCount = 0;
+        
+        ifstream in;
+        in.open("Task.dat");
+        if (!in) {
+            cout << "Error opening Task.dat file" << endl;
+            return;
+        }
+        
+        string line;
+        while(in>>line)
+        {
+            taskCount++;
+        }
+
+        tasks = new task*[taskCount];
+        in.close();
+
+        in.open("Task.dat");
+        
+        string name, description, status, assigned_by, assigned_to, priority, assigned_by_position, task_assigned_to_pos;
+        time_t ttl = 0;
+        string assigned_time;
+        int days = 0;
+
+        int i = 0;
+       while (getline(in, name, '|')) {
+        getline(in, description,           '|');
+        getline(in, status,                '|');
+        getline(in, assigned_by,           '|');
+        getline(in, assigned_by_position,  '|');
+        getline(in, assigned_to,           '|');
+        getline(in, task_assigned_to_pos,       '|');
+        getline(in, priority,              '|');
+        in >> days;
+        in.ignore(1);
+        getline(in, assigned_time, '\n');
+
+            
+            tasks[i]->setTaskName(name);
+            tasks[i]->setTaskDescription(description);
+            tasks[i]->setTaskStatus(status);
+            tasks[i]->setTaskAssignedBy(assigned_by);
+            tasks[i]->setTaskAssignedTo(assigned_to);
+            tasks[i]->setTaskPriority(priority);
+            tasks[i]->setTTLTime(ttl);
+            i++;
+        }
+
+        in.close();
+    }
+    
+    
+    // Check task deadlines recursively
+    void checkDeadlines() {
+        checkDeadlinesRecursive(0);
+    }
+    
+    // Write tasks back to file after status updates
+    void writeTasksToFile() {
+        ofstream out;
+        out.open("Task.dat", ios::trunc);  // Open file and truncate it
+        
+        if (!out) {
+            cout << "Error opening Task.dat for writing" << endl;
+            return;
+        }
+        
+        for (int i = 0; i < taskCount; i++)
+        {
+            out<< tasks[i]->getTaskName()<<"|"<<tasks[i]->getTaskDescription()<<"|"<<tasks[i]->getTaskStatus()<<"|"<<tasks[i]->getTaskAssignedBy()<<"|"<< tasks[i]->getTaskAssignedToPosition() <<"|"<<tasks[i]->getTaskAssignedTo()<<"|"<<tasks[i]->getTaskAssignedToPosition()<<"|"<<tasks[i]->getTaskPriority()<<"|"<<"5"<<"|"<< tasks[i]->getTTLTime() << endl;
+        }
+        out.close();
+        // Log expired tasks
+        logExpiredTasks();
+    }
+    
+    // Log expired tasks to activity log
+    void logExpiredTasks() 
+    {
+        ofstream log;
+        log.open("PointLogs.txt", ios::app);  // Append to the file
+        
+        if (!log) {
+            cout << "Error opening PointLogs.txt for writing" << endl;
+            return;
+        }
+        
+        time_t now = time(0);
+        string currentTime = ctime(&now);
+        if (!currentTime.empty() && currentTime.back() == '\n') {
+            currentTime.pop_back();
+        }
+        
+        for (int i = 0; i < taskCount; i++) {
+            if (tasks[i] && tasks[i]->getTaskStatus() == "Expired") {
+                log << currentTime << " Task: " << tasks[i]->getTaskName() 
+                    << " assigned to " << tasks[i]->getTaskAssignedTo() 
+                    << " has expired|1" << endl;
+            }
+        }
+        log.close();
+    }
+};
 
 
 class task {
@@ -983,11 +1132,9 @@ class PolicyEngine : public ActivityLog{
                 return false;
             }
             
-            cout<<YELLOW<<"\n       Enter Task Assigned Time: "<<"\033[0m";
-            time_t TTL;
-            int assingedDays = 0;
             // I will  start working here for the TTL Assingment ( EXPIREIE DATE )
-            cin>>TTL;
+            int assingedDays = 0;
+            time_t TTL = time(0) + (assingedDays * 24 * 60 * 60);
             t->setTTLTime(TTL);
 
             //writing the task to the file
@@ -996,23 +1143,8 @@ class PolicyEngine : public ActivityLog{
                 cout<<"Error opening file"<<endl;
                 return false;
             }
-            //outing time also to the file
-            time_t currentTime = time(0); // Get current time
-            char* dateTime = ctime(&currentTime); // Convert to string
-            out<<t->getTaskName()<<"|"<<t->getTaskDescription()<<"|"<<t->getTaskStatus()<<"|"<<t->getTaskAssignedBy()<<"|"<<pw->getPosition()<<"|"<<t->getTaskAssignedTo()<<"|"<<t->getTaskAssignedToPosition()<<"|"<<t->getTaskPriority()<<"|"<<TTL<<"|"<< dateTime;
+            out<<t->getTaskName()<<"|"<<t->getTaskDescription()<<"|"<<t->getTaskStatus()<<"|"<<t->getTaskAssignedBy()<<"|"<<pw->getPosition()<<"|"<<t->getTaskAssignedTo()<<"|"<<t->getTaskAssignedToPosition()<<"|"<<t->getTaskPriority()<<"|"<<"5"<<"|"<< TTL;
 
-            cout<<YELLOW<<"\n       Enter Task Expire Time (in days): "<<"\033[0m";
-            cin>>assingedDays;
-            time_t deadline = time(0) + (assingedDays * 24 * 60 * 60);
-            t->setTTLTime(deadline);
-            out.open("Task.dat",ios::app);
-            out << t->getTaskName() << "|"
-                << t->getTaskDescription() << "|"
-                << t->getTaskStatus() << "|"
-                << t->getTaskAssignedBy() << "|"
-                << t->getTaskAssignedTo() << "|"
-                << t->getTTLTime() << endl;
-            out.close();
 
             ActivityLog logging( "Task: " + t->getTaskName() + " assigned to " + p->getName() + " by " + pw->getName());
             out.open("ActivityLog.txt",ios::app);
