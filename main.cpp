@@ -13,7 +13,7 @@ using namespace std;
 
 //starting the project
 
-// 14 classes ban chuki
+// 16 classes ban chuki
 
 
 
@@ -28,22 +28,20 @@ using namespace std;
 //Messages System                                                              ----->Review Statment once again 
 //Tasks can be assigned priority levels: High, Medium, Low.
 //Encryption Key for Decrypting Private Messages, Intended Users functionality
+//Time To Live
+//ADD USER (HIRE NEW Subordinates)
+// GUI-style dashboard using ASCII art and box formatting
+//Task Deligation
+//Global Notification System
+//Special Tasks for each position to justify hierarchical levels
 
 
 
 //-------------In Progress------------
-//Time To Live
-//ADD USER (HIRE NEW Subordinates)
 //Employee Performance (points) System
-// GUI-style dashboard using ASCII art and box formatting
-
 
 
 //-------------To Do------------
-//Task Deligation
-//Global Notification System
-//Special Tasks for each position to justify hierarchical levels
-//still have to think about the unique ID system
 
 
 
@@ -71,6 +69,17 @@ using namespace std;
 
 
 void mainMenu();
+
+class Points
+{
+    protected:
+        int points;
+    public:
+    Points()
+    {
+        points = 0;
+    }
+};
 
 class TimeManager
 {
@@ -111,6 +120,10 @@ public:
 
         if(taskCount != 0)
         {
+            for(int i = 0; i < taskCount; i++)
+            {
+                delete tasks[i];
+            }
             delete [] tasks;
         }
         taskCount = 0;
@@ -133,36 +146,44 @@ public:
 
         in.open("Task.dat");
         
-        string name, description, status, assigned_by, assigned_to, priority, assigned_by_position, task_assigned_to_pos;
-        time_t ttl = 0;
+        string name, description, status, assigned_by, assigned_to, priority;
+        string assigned_by_position, task_assigned_to_pos;
+        time_t ttl;
         string assigned_time;
-        int days = 0;
+        int days;
 
         int i = 0;
-       while (getline(in, name, '|')) {
-        getline(in, description,           '|');
-        getline(in, status,                '|');
-        getline(in, assigned_by,           '|');
-        getline(in, assigned_by_position,  '|');
-        getline(in, assigned_to,           '|');
-        getline(in, task_assigned_to_pos,       '|');
-        getline(in, priority,              '|');
-        in >> days;
-        in.ignore(1);
-        getline(in, assigned_time, '\n');
-
+        while (getline(in, name, '|')) {
+            // Create a new task object first - THIS IS THE CRITICAL FIX
+            tasks[i] = new task();
             
+            getline(in, description, '|');
+            getline(in, status, '|');
+            getline(in, assigned_by, '|');
+            getline(in, assigned_by_position, '|');
+            getline(in, assigned_to, '|');
+            getline(in, task_assigned_to_pos, '|');
+            getline(in, priority, '|');
+            in >> days;
+            in.ignore(1);
+            in >> ttl;
+            in.ignore(1);
+            getline(in, assigned_time, '\n');
+            
+            // Set the task properties
             tasks[i]->setTaskName(name);
             tasks[i]->setTaskDescription(description);
             tasks[i]->setTaskStatus(status);
             tasks[i]->setTaskAssignedBy(assigned_by);
+            tasks[i]->setTaskAssignedToPosition(assigned_by_position);
             tasks[i]->setTaskAssignedTo(assigned_to);
+            tasks[i]->setTaskAssignedToPosition(task_assigned_to_pos);
             tasks[i]->setTaskPriority(priority);
             tasks[i]->setTTLTime(ttl);
-            i++;
-        }
-
+            
         in.close();
+        i++;
+        }
     }
     
     
@@ -1998,12 +2019,6 @@ void readingInfoFile(PaidWorkers*);
 #define BLUE "\033[34m"
 #define RESET "\033[0m"
 
-
-
-
-
-
-
 //-----------------------------------Code Execution start from here--------------------------------
 
 
@@ -2213,6 +2228,12 @@ void readingInfoFile(PaidWorkers* pw)
 
 
 void viewMyTasks(PaidWorkers* pw) {
+
+    TimeManager tm;
+    tm.readTasksFromFile();
+    tm.checkDeadlines();
+    tm.writeTasksToFile();
+
     SetConsoleOutputCP(CP_UTF8);
     // Enable ANSI escape codes on Windows
     system("");
