@@ -1,0 +1,6 @@
+3456|nora|Executive|sJ#\\|1000|18
+4567|oliver|Executive|tL&`|1000|22
+5678|paula|Executive|uN)d|1000|27
+6789|quinn|Executive|vO-e|1000|14
+7890|ryan|Executive|wP/f|1000|19
+8901|sophia|Executive|xQ0g|1000|31

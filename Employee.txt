@@ -1,0 +1,7 @@
+7777|grace|Employee|wP)`|1000|10
+8888|henry|Employee|xR,d|1000|20
+9999|irene|Employee|yT/h|1000|25
+1010|jack|Employee|qBuD|1000|18
+2020|kate|Employee|sI?M|1000|12
+3030|liam|Employee|tK~V|1000|30
+1621|Musalli|Employee|qF{T|1000|20

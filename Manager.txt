@@ -1,0 +1,6 @@
+9012|leo|Manager|yBuL|1000|18
+1357|emma|Manager|qH#`|1000|22
+2468|noah|Manager|rK~d|1000|25
+9876|olivia|Manager|}^)|1000|14
+1123|ethan|Manager|qD$V|1000|19
+4455|isla|Manager|sF%W|1000|30
