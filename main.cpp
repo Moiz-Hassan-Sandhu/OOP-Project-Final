@@ -70,6 +70,113 @@ using namespace std;
 
 void mainMenu();
 
+class task {
+    string task_name;
+    string task_description;
+    string task_status;
+    string task_assigned_by;
+    string task_assigned_to;
+    string task_assigned_to_position;
+    string task_priority;
+    string task_assigned_time;  
+    time_t TTL_time;
+    public:
+    task(){
+        task_name="";
+        task_description="";
+        task_status="";
+        task_assigned_by="";
+        task_assigned_to="";
+        task_assigned_to_position="";
+        task_priority="";
+        TTL_time=0;
+    }
+    task(string name,string description,string status,string assigned_by,string assigned_to,int TTL){
+        task_name=name;
+        task_description=description;
+        task_status=status;
+        task_assigned_by=assigned_by;
+        task_assigned_to=assigned_to;
+        TTL_time=TTL;
+    }
+    void setAssignedTime(const string &t) {
+        task_assigned_time = t;
+    }
+    string getAssignedTime() const {
+        return task_assigned_time;
+    }
+    void setTaskName(string name){
+        task_name=name;
+    }
+    void setTaskAssignedToPosition(string position){
+        task_assigned_to_position=position;
+    }
+    void setTaskDescription(string description){
+        task_description=description;
+    }
+    void setTaskStatus(string status){
+        task_status=status;
+    }
+    void setTaskPriority(string priority){
+        task_priority=priority;
+    }
+    void setTaskAssignedBy(string assigned_by){
+        task_assigned_by=assigned_by;
+    }
+    void setTaskAssignedTo(string assigned_to){
+        task_assigned_to=assigned_to;
+    }
+    void setTTLTime(time_t TTL){
+        TTL_time=TTL;
+    }
+    string getTaskName(){
+        return task_name;
+    }
+    string getTaskDescription(){
+        return task_description;
+    }
+    string getTaskStatus(){
+        return task_status;
+    }
+    string getTaskAssignedToPosition(){
+        return task_assigned_to_position;
+    }
+    string getTaskAssignedBy(){
+        return task_assigned_by;
+    }
+    string getTaskPriority(){
+        return task_priority;
+
+    }
+    string getTaskAssignedTo(){
+        return task_assigned_to;
+    }
+    time_t getTTLTime(){
+        return TTL_time;
+    }
+    string getTaskAssignedTime(){
+        char buffer[26];
+        ctime_s(buffer, sizeof(buffer), &TTL_time);
+        return string(buffer);
+    }
+    //operator overloading for printing the task details
+    friend ostream& operator <<(ostream& out, task& t)
+    {
+        out << "Task Name: " << t.task_name << endl
+            << "Task Description: " << t.task_description << endl
+            << "Task Status: " << t.task_status << endl
+            << "Task Assigned By: " << t.task_assigned_by << endl
+            << "Task Assigned To: " << t.task_assigned_to << endl
+            << "Task Assigned To Position: " << t.task_assigned_to_position << endl
+            << "Task Priority: " << t.task_priority << endl
+            << "TTL Time: " << ctime(&t.TTL_time) << endl;
+        return out;
+    }
+    ~task(){}
+    
+};
+
+
 class Points
 {
     protected:
@@ -89,7 +196,7 @@ class Points
     {
         points = p;
     }
-    
+
 
 };
 
