@@ -1235,17 +1235,24 @@ class PolicyEngine : public ActivityLog{
 
     //making a global function to send information to all the workers
     void sendGlobalAlert(){
+
         if(accessLevel < 4){
-            cout<<"You do not have permission to send global alert"<<endl;
+            #define RESET "\033[0m"
+            cout<<GREEN<<"You do not have permission to send global alert"<<RESET<<endl;
             return;
         }
-        cout<<"\n\n===========Global Alert============ "<<endl;
-        cout<<"\n Enter the Alert: ";
+        cout<<RED<<"\n\n===========Global Alert============ "<<endl;
+        cout<<"\n          Enter the Alert: ";
         string alert_message;
         getline(cin, alert_message);
         //0|Director|Servers to be down Till 9pm|readername1readername2
         //message id|Sender position|Message|readers names
         //extracting the id from the file to assign 1+ id 
+        cout <<"          Enter Alert Type : ";
+        string type;
+        getline(cin, type);
+        alert_message=type+" : "+alert_message;
+        
         ifstream in;
         in.open("GlobalNoti.txt");
         if(!in){
@@ -1277,7 +1284,7 @@ class PolicyEngine : public ActivityLog{
         out.close();
 
 
-        cout<<"Notification Sent Successfully!"<<endl;
+        cout<<GREEN<<"Notification Sent Successfully!"<<RESET<<endl;
 
     
 
@@ -3399,7 +3406,7 @@ void ExecutiveMenu(PaidWorkers* pw)
         "Press 5 to Delegate Task",
         "Press 6 to Generate Audit Report",
         "Press 7 to View ALL Logs",
-        "Press 8 to Sign Signaturies for Approval of Task",
+        "Press 8 to Send Global Alert",
         "Press 9 to Exit"
     };
     const int numOptions = 9;
@@ -3448,8 +3455,8 @@ void ExecutiveMenu(PaidWorkers* pw)
         }
         case 8:
         {
-            //PolicyEngine pe(pw);
-            //pe.signatures();
+            PolicyEngine pe(pw);
+            pe.sendGlobalAlert();
             break;
         }
         case 9:
@@ -3542,9 +3549,9 @@ void ManagerMenu(PaidWorkers* pw){
         "Press 6 to Assign Tasks Created By Executive",
         "Press 7 to Exit"
     };
-    const int numOptions = 5;
+    const int numOptions = 7;
     printMenu(menuTitle, options, numOptions);
-    cout << BLUE << "\n          Enter your choice (1-6): " << RESET;
+    cout << BLUE << "\n          Enter your choice (1-7): " << RESET;
     int choice1;
     // cout<<"Press your option to continue: ";
     cin>>choice1;
@@ -3612,6 +3619,12 @@ void ManagerMenu(PaidWorkers* pw){
             PE.AssignCreatedTask(pw);
             break;
         }
+        case 7:
+        {
+            mainMenu();
+            break;
+            
+        }
         default:
         {
             cout<<"Invalid Option"<<endl<<endl<<endl;
@@ -3624,21 +3637,23 @@ void ManagerMenu(PaidWorkers* pw){
 void EmployeeMenu(PaidWorkers* pw)
 {
     PolicyEngine pe(pw);
-    int choice1 = 0;
-    cout<<endl<<endl<<endl;
-    cout<<"                              #===========================================#"<<endl
-    <<"                              #          Employee Menu                    #"<<endl
-    <<"                              #===========================================#"<<endl
-    <<"                              #          Press 1 to open Message menu     #"<<endl
-    <<"                              #          Press 1 to View All Tasks        #"<<endl
-    <<"                              #          Press 2 to View My Tasks         #"<<endl
-    <<"                              #          Press 3 to Add New Task          #"<<endl
-    <<"                              #          Press 4 to Exit                  #"<<endl
-    <<"                              #===========================================#"<<endl<<endl<<endl;
+     int choice;
+    string menuTitle = "EMPLOYEE MENU";
+    string options[] = {
+        "Press 1 to see messages",
+        "Press 2 to View My Tasks",
+        "Press 3 to Assign New Task",
+        "Press 4 to Delegate Task",
+        "Press 5 to Exit"
+    };
+    const int numOptions = 5;
+    
+    printMenu(menuTitle, options, numOptions);
+    cout << BLUE << "\n          Enter your choice (1-5): " << RESET;
+        cin >> choice;
 
-    cout<<"Press your option to continue: ";
-    cin>>choice1;
-    switch(choice1)
+    cin>>choice;
+    switch(choice)
     {
         case 1:
         {
@@ -3647,15 +3662,24 @@ void EmployeeMenu(PaidWorkers* pw)
         }
         case 2:
         {
+            viewMyTasks(pw);
             break;
         }
         case 3:
         {
+            assignTask(pw);
             break;
         }
         case 4:
         {
+            delegateIncompetentTasks(pw);
             break;
+        }
+        case 5:
+        {
+            mainMenu();
+            break;
+
         }
         default:
         {
@@ -3669,37 +3693,43 @@ void EmployeeMenu(PaidWorkers* pw)
 void JuniorMenu(PaidWorkers* pw)
 {
     PolicyEngine pe(pw);
-    int choice1 = 0;
-    cout<<endl<<endl<<endl;
-    cout<<"                              #===========================================#"<<endl
-    <<"                              #          Junior Menu                      #"<<endl
-    <<"                              #===========================================#"<<endl
-    <<"                              #          Press 1 to View All Tasks        #"<<endl
-    <<"                              #          Press 2 to View My Tasks         #"<<endl
-    <<"                              #          Press 3 to Add New Task          #"<<endl
-    <<"                              #          Press 4 to Exit                  #"<<endl
-    <<"                              #===========================================#"<<endl<<endl<<endl;
 
-    cout<<"Press your option to continue: ";
-    cin>>choice1;
-    switch(choice1)
+    int choice;
+    string menuTitle = "JUNIOR MENU";
+    string options[] = {
+        "Press 1 to see messages",
+        "Press 2 to View My Tasks",
+        "Press 3 to Exit"
+    };
+    const int numOptions = 3;
+    
+    printMenu(menuTitle, options, numOptions);
+    cout << BLUE << "\n          Enter your choice (1-3): " << RESET;
+        cin >> choice;
+
+    cin>>choice;
+    
+    
+    
+    
+    switch(choice)
     {
         case 1:
         {
+            show_Message_menu(pw);
             break;
         }
         case 2:
         {
+            viewMyTasks(pw);
             break;
         }
         case 3:
         {
+            mainMenu();
             break;
         }
-        case 4:
-        {
-            break;
-        }
+        
         default:
         {
             cout<<"Invalid Option"<<endl<<endl<<endl;
