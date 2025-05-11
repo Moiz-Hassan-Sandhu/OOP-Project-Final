@@ -116,7 +116,7 @@ public:
         delete[] tasks;
     }
     
-    void readTasksFromFile() {
+    void readTasksFile() {
 
         if(taskCount != 0)
         {
@@ -193,7 +193,7 @@ public:
     }
     
     // Write tasks back to file after status updates
-    void writeTasksToFile() {
+    void writeTasksFile() {
         ofstream out;
         out.open("Task.dat", ios::trunc);  // Open file and truncate it
         
@@ -2230,7 +2230,7 @@ void readingInfoFile(PaidWorkers* pw)
 void viewMyTasks(PaidWorkers* pw) {
 
     TimeManager tm;
-    tm.readTasksFromFile();
+    tm.readTasksFile();
     tm.checkDeadlines();
     tm.writeTasksToFile();
 
