@@ -73,12 +73,24 @@ void mainMenu();
 class Points
 {
     protected:
+        PaidWorkers* pw;
         int points;
     public:
     Points()
     {
+        pw = nullptr;
         points = 0;
     }
+    int getPoints()
+    {
+        return points;
+    }
+    void setPoints(int p)
+    {
+        points = p;
+    }
+    
+
 };
 
 class TimeManager
@@ -87,8 +99,7 @@ private:
     task** tasks;
     int taskCount;
     
-    // Helper function for recursive deadline checking
-    void checkDeadlinesRecursive(int index) {
+    void checkDeadlinesRecursive(int index) {       //recursive fucntion to check TTL
         if (index >= taskCount) {
             return;
         }
@@ -222,21 +233,24 @@ public:
             return;
         }
         
-        time_t now = time(0);
-        string currentTime = ctime(&now);
-        if (!currentTime.empty() && currentTime.back() == '\n') {
-            currentTime.pop_back();
-        }
+        string currentTime = getCurrentTime();
         
         for (int i = 0; i < taskCount; i++) {
             if (tasks[i] && tasks[i]->getTaskStatus() == "Expired") {
                 log << currentTime << " Task: " << tasks[i]->getTaskName() 
                     << " assigned to " << tasks[i]->getTaskAssignedTo() 
-                    << " has expired|1" << endl;
+                    << " has expired|-10" << endl;
             }
         }
         log.close();
     }
+    string getCurrentTime() const {         //just to get the newtime without getting the new line character at the end od the current time
+            time_t now = time(0);                 //current time stamp to now in long long int form
+            string newtime = ctime(&now);        //current timestamp to string
+            if (!newtime.empty() && newtime.back() == '\n') //if string is not empty and the last char is '\n'
+                newtime.pop_back();                         //then remove that charachter
+            return newtime;                                 //return newtime
+        }
 };
 
 
